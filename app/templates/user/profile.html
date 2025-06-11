@@ -1,0 +1,58 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<h2 class="my-4 text-center">הפרופיל שלי</h2>
+
+<!-- תמונת פרופיל -->
+<div class="text-center mb-4">
+    <img 
+        src="{{ url_for('static', filename='profile_images/user_' ~ user.user_id ~ '.png') }}"
+        onerror="this.onerror=null;this.src='{{ url_for('static', filename='profile_images/default.png') }}';"
+        class="rounded-circle shadow" width="150" alt="תמונת פרופיל">
+</div>
+
+<!-- כפתורי עריכה וחזרה -->
+<div class="text-center mb-4 d-flex justify-content-center gap-3">
+    <a href="{{ url_for('main.edit_profile') }}" class="btn btn-outline-info">✏ ערוך פרטים</a>
+    <a href="{{ url_for('main.admin_dashboard') if user.type == 'admin' else url_for('main.user_dashboard') }}" class="btn btn-outline-secondary">⬅ חזרה לדשבורד</a>
+</div>
+
+<!-- פרטי המשתמש -->
+<div class="card w-50 mx-auto shadow">
+    <div class="card-body bg-light text-dark">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">שם פרטי: <strong>{{ user.first_name }}</strong></li>
+            <li class="list-group-item">שם משפחה: <strong>{{ user.last_name }}</strong></li>
+            <li class="list-group-item">אימייל: <strong>{{ user.email }}</strong></li>
+        </ul>
+    </div>
+</div>
+
+{% if user.type != 'admin' %}
+<!-- השכרות -->
+<hr class="my-4">
+<h4 class="text-center mt-4">📼 ההשכרות שלי</h4>
+<div class="row row-cols-1 row-cols-md-3 g-4 mt-2">
+    {% for rental, movie in rentals %}
+    <div class="col">
+        <div class="card h-100 bg-dark text-white border-light shadow">
+            <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 250px; object-fit: cover;">
+            <div class="card-body d-flex flex-column justify-content-between">
+                <h5 class="card-title">{{ movie.title }}</h5>
+                <p class="card-text">הושכר בתאריך: {{ rental.rent_date.strftime('%Y-%m-%d') }}</p>
+                <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}" class="btn btn-outline-info btn-sm mt-2">מידע</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center mt-4">
+        <div class="alert alert-info">
+            <h4 class="alert-heading">😢 אין עדיין השכרות להצגה</h4>
+            <p class="mb-0">אתה מוזמן לגלות את <a href="{{ url_for('main.all_movies') }}" class="alert-link">מגוון הסרטים שלנו</a> ולהתחיל להשכיר!</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

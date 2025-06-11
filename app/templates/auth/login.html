@@ -1,0 +1,31 @@
+{% extends "layouts/base_login.html" %}
+{% set hide_navbar = True %}
+{% block title %}התחברות{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center flex-column" style="min-height: 70vh;">
+    <h2 class="mb-4">🔐 התחברות</h2>
+    <form method="POST" class="w-50">
+        <div class="mb-3">
+            <label for="email" class="form-label">אימייל</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">סיסמה</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-outline-light">התחבר</button>
+        </div>
+    </form>
+
+    <div class="mt-3">
+        <a href="{{ url_for('main.forgot_password') }}" class="link-light text-decoration-underline">שכחת סיסמה?</a>
+    </div>
+
+    <!-- לחצן חזרה לעמוד הראשי -->
+    <div class="mt-4">
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-sm">⬅ חזרה לעמוד הבית</a>
+    </div>
+</div>
+{% endblock %}

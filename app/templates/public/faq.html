@@ -1,0 +1,51 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+<div class="container mt-5 text-light">
+    <h2 class="mb-4 text-center">❓ שאלות נפוצות</h2>
+
+    <div class="accordion" id="faqAccordion">
+        <div class="accordion-item bg-dark text-light border-light">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#q1">
+                    איך שוכרים סרט?
+                </button>
+            </h2>
+            <div id="q1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    לאחר כניסה למערכת, ניתן ללחוץ על כפתור "השכרה" מתחת לסרט הרצוי. הסרט יופיע בלשונית "ההשכרות שלי".
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item bg-dark text-light border-light">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#q2">
+                    שכחתי את הסיסמה, מה עושים?
+                </button>
+            </h2>
+            <div id="q2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    בעמוד ההתחברות לחץ על "שכחת סיסמה?", הזן את כתובת הדוא"ל ותקבל את הסיסמה שלך למייל.
+                </div>
+            </div>
+        </div>
+
+        <div class="accordion-item bg-dark text-light border-light">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#q3">
+                    איך אני משנה את פרטי המשתמש שלי?
+                </button>
+            </h2>
+            <div id="q3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    בעמוד הפרופיל, לחץ על כפתור "ערוך פרופיל", בצע את השינויים ולחץ על "שמור".
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- כפתור חזרה לדשבורד -->
+<div class="mt-4">
+    <a href="{{ url_for('main.user_dashboard') }}" class="btn btn-outline-light">⬅ חזור לדשבורד</a>
+</div>
+{% endblock %}

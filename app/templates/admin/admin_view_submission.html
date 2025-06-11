@@ -1,0 +1,32 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}צפייה בפנייה: {{ submission.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-light" style="max-width: 800px;">
+    <h2 class="mb-4">פנייה מאת: {{ submission.name }}</h2>
+    <div class="mb-4">
+        <p class="mb-2"><strong>תאריך:</strong> {{ submission.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p class="mb-2"><strong>אימייל:</strong> <a href="mailto:{{ submission.email }}" class="text-info">{{ submission.email }}</a></p>
+    </div>
+
+    <div class="mb-4 bg-dark p-3 border border-secondary rounded">
+        <h6 class="mb-2">תוכן הפניה:</h6>
+        <p class="mb-0" style="white-space: pre-wrap;">{{ submission.message }}</p>
+    </div>
+            
+    <h3 class="mb-3">הגב לפנייה</h3>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="response_subject" class="form-label">נושא התגובה:</label>
+            <input type="text" class="form-control" id="response_subject" name="response_subject" value="RE: פנייתך לאתר CineMate" required>
+        </div>
+        <div class="mb-3">
+            <label for="response_body" class="form-label">גוף התגובה:</label>
+            <textarea class="form-control" id="response_body" name="response_body" rows="8" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">שלח תגובה במייל</button>
+        <a href="{{ url_for('main.admin_submissions') }}" class="btn btn-secondary">חזור לרשימת הפניות</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<h2 class="text-center my-4">ההשכרות שלי</h2>
+
+<div class="row row-cols-1 row-cols-md-4 g-4">
+    {% for rental, movie in rentals %}
+    <div class="col">
+        <div class="card h-100 bg-secondary text-white">
+            <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}">
+            <div class="card-body">
+                <h5 class="card-title">{{ movie.title }}</h5>
+                <p class="card-text">הושכר בתאריך: {{ rental.rent_date.strftime('%Y-%m-%d') }}</p>
+                <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}"
+                class="btn btn-outline-info btn-sm w-50">מידע</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center mt-4">
+        <div class="alert alert-info">
+            <h4 class="alert-heading">😢 אין השכרות להצגה</h4>
+            <p class="mb-0">עדיין לא השכרת סרטים. <a href="{{ url_for('main.all_movies') }}" class="alert-link">לחץ כאן</a> לצפייה בסרטים זמינים להשכרה.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

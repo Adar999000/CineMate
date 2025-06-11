@@ -1,0 +1,7 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<h2 class="my-4 text-center">404 - הדף לא נמצא</h2>
+<p class="text-center">אופס... הדף שביקשת לא קיים.</p>
+<a href="{{ url_for('main.index') }}" class="btn btn-primary d-block mx-auto">חזור לעמוד הבית</a>
+{% endblock %}

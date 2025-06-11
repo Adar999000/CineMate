@@ -1,0 +1,21 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="container text-center">
+  <h2 class="my-4">{{ movie.title }}</h2>
+
+  <div class="row justify-content-center">
+    <div class="col-md-4">
+      <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="img-fluid rounded shadow">
+    </div>
+    <div class="col-md-6 text-start">
+      <p><strong>שנה:</strong> {{ movie.year }}</p>
+      <p><strong>ז'אנר:</strong> {{ movie.genre }}</p>
+      <p><strong>תיאור:</strong> {{ movie.description }}</p>
+
+      <a href="{{ url_for('main.user_dashboard') }}" class="btn btn-outline-light mt-3">⬅ חזור לדשבורד</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

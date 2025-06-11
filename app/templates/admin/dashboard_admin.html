@@ -1,0 +1,35 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="container text-center">
+
+  <!-- 👨‍💼 כותרת ותמונה -->
+  <div class="d-flex align-items-center justify-content-center mb-5 mt-4">
+    <img src="{{ url_for('static', filename='profile_images/user_' ~ current_user.user_id ~ '.png') }}"
+         onerror="this.onerror=null;this.src='{{ url_for('static', filename='profile_images/default.png') }}';"
+         class="rounded-circle shadow" width="60" alt="Admin Profile">
+    <h2 class="ms-3 mt-2">ברוך הבא, {{ current_user.first_name }} 👨‍💼</h2>
+  </div>
+
+  <!-- 🔘 לחצנים -->
+  <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center mb-5">
+    <div class="col">
+      <a href="{{ url_for('main.admin_rentals') }}" class="btn btn-outline-light btn-lg w-100 py-3">
+        📄 ניהול השכרות
+      </a>
+    </div>
+    <div class="col">
+      <a href="{{ url_for('main.admin_users_list') }}" class="btn btn-outline-light btn-lg w-100 py-3">
+        👥 ניהול משתמשים
+      </a>
+    </div>
+    <div class="col">
+      <a href="{{ url_for('main.admin_edit_movies') }}" class="btn btn-outline-light btn-lg w-100 py-3">
+        🎬 ניהול סרטים
+      </a>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

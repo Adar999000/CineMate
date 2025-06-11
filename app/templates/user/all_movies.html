@@ -1,0 +1,32 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<h2 class="my-4 text-center">🎬 כל הסרטים באתר</h2>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  {% for movie in movies %}
+  <div class="col">
+    <div class="card h-100 bg-dark text-white shadow border-light">
+      <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 250px; object-fit: cover;">
+      <div class="card-body d-flex flex-column justify-content-between">
+        <h5 class="card-title">{{ movie.title }}</h5>
+        <p class="card-text" style="color: #E0E0E0;">{{ movie.genre }} • {{ movie.year }}</p>
+
+        <div class="d-flex gap-2">
+          <!-- כפתור מידע -->
+          <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}" class="btn btn-outline-info btn-sm w-50">
+            מידע
+          </a>
+
+          <!-- כפתור השכרה -->
+          <form method="POST" action="{{ url_for('main.rent_movie', movie_id=movie.movie_id) }}" class="w-50">
+            <button class="btn btn-outline-light btn-sm w-100">השכר עכשיו</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

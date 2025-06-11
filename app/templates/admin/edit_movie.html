@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">🎬 עריכת סרט</h2>
+        {% if movie.poster_url %}
+        <div class="text-center mb-4">
+            <img src="{{ movie.poster_url }}" alt="פוסטר" class="img-fluid rounded shadow" style="max-height: 300px;">
+        </div>
+        {% else %}
+            <div class="text-center mb-4">
+                <img src="{{ url_for('static', filename='image_400389430.jpg') }}" alt="פוסטר ברירת מחדל" class="img-fluid rounded shadow" style="max-height: 300px;">
+            </div>
+        {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" class="w-50 mx-auto">
+        <div class="mb-3">
+            <label class="form-label">שם הסרט</label>
+            <input type="text" name="title" class="form-control" value="{{ movie.title }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">שנה</label>
+            <input type="number" name="year" class="form-control" value="{{ movie.year }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">ז'אנר</label>
+            <input type="text" name="genre" class="form-control" value="{{ movie.genre }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">תיאור</label>
+            <textarea name="description" class="form-control" rows="4" required>{{ movie.description }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">תגיות (מופרדות בפסיקים)</label>
+            <input type="text" name="tags" class="form-control" value="{{ movie.tags }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">כתובת URL של פוסטר</label>
+            <input type="url" name="poster_url" class="form-control" value="{{ movie.poster_url }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">או העלאת תמונה חדשה</label>
+            <input type="file" name="poster_file" class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-success">💾 שמור</button>
+        <a href="{{ url_for('main.admin_edit_movies') }}" class="btn btn-secondary ms-2">חזור</a>
+    </form>
+</div>
+{% endblock %}

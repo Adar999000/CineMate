@@ -1,0 +1,54 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+<h2 class="text-center my-4">📋 ניהול משתמשים</h2>
+
+<table class="table table-dark table-bordered table-striped text-center align-middle">
+  <thead class="table-light">
+    <tr>
+      <th>#</th>
+      <th>תמונה</th>
+      <th>שם פרטי</th>
+      <th>שם משפחה</th>
+      <th>אימייל</th>
+      <th>סוג משתמש</th>
+      <th>פעולות</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+    <tr>
+      <td>{{ user.user_id }}</td>
+      <td>
+        <img src="{{ url_for('static', filename='profile_images/user_' ~ user.user_id ~ '.png') }}" 
+             onerror="this.onerror=null;this.src='{{ url_for('static', filename='profile_images/default.png') }}';" 
+             class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" 
+             alt="{{ user.first_name }}'s profile">
+      </td>
+      <td>{{ user.first_name }}</td>
+      <td>{{ user.last_name }}</td>
+      <td>{{ user.email }}</td>
+      <td>{{ user.type }}</td>
+      <td>
+        <a href="{{ url_for('main.admin_edit_user', user_id=user.user_id) }}" class="btn btn-sm btn-outline-info">ערוך</a>
+        <form method="POST" action="{{ url_for('main.admin_delete_user', user_id=user.user_id) }}" style="display:inline-block;"
+              onsubmit="return confirm('האם אתה בטוח שברצונך למחוק משתמש זה?');">
+          <button type="submit" class="btn btn-sm btn-outline-danger">מחק</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if users|length == 0 %}
+<p class="text-muted text-center mt-4">אין משתמשים להצגה</p>
+{% endif %}
+
+  <!-- חזור לדשבורד -->
+  <div class="mt-4">
+    <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-light">⬅ חזור לדשבורד מנהל</a>
+  </div>
+
+</div>
+
+{% endblock %}

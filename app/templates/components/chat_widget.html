@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>CineMate Chat</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #1e1e1e;
+        }
+
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            direction: ltr;
+        }
+
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #007bff;
+            background-color: white;
+            cursor: pointer;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .chat-toggle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .chat-box {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: #343a40;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .chat-header::before {
+            content: '🤖';
+            font-size: 1.2em;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f8f9fa;
+            position: relative;
+        }
+
+        #messages-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 8px;
+            margin: 5px 10px;
+            direction: ltr;
+        }
+
+        .bot-message {
+            justify-content: flex-start;
+        }
+
+        .bot-message .message-content-wrapper {
+            background: #007bff;
+            color: white;
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .user-message .message-content-wrapper {
+            background: #e9ecef;
+            color: #212529;
+        }
+
+        .user-message .message-avatar {
+            order: 2;
+        }
+
+        .user-message .message-content-wrapper {
+            order: 1;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            flex-shrink: 0;
+        }
+
+        .message-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .message-content-wrapper {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 15px;
+            background: #e9ecef;
+            position: relative;
+        }
+
+        .message-text {
+            margin-bottom: 2px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            display: block;
+            text-align: right;
+            margin-top: 2px;
+        }
+
+        .chat-form {
+            padding: 12px 15px;
+            background: #2c3136;
+            border-radius: 0 0 12px 12px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #495057;
+            border-radius: 20px;
+            background: #343a40;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .chat-input::placeholder {
+            color: #adb5bd;
+        }
+
+        .send-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .send-button:hover {
+            background: #0056b3;
+        }
+
+        /* סגנון אנימציית ההקלדה */
+        .typing-indicator {
+            display: none;
+            padding: 6px 12px;
+            background: #007bff;
+            border-radius: 12px;
+            width: fit-content;
+            position: sticky;
+            bottom: 0;
+            left: 15px;
+            margin: 5px;
+            z-index: 2;
+        }
+
+        .typing-indicator span {
+            height: 4px;
+            width: 4px;
+            background: white;
+            display: inline-block;
+            border-radius: 50%;
+            margin: 0 1px;
+            animation: typing 0.8s infinite;
+            opacity: 0.9;
+        }
+
+        .chat-close-btn {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            z-index: 1000;
+        }
+
+        .chat-close-btn:hover {
+            background-color: #cc0000;
+        }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-widget">
+    <button class="chat-toggle" id="chat-toggle">
+        <img src="{{ url_for('static', filename='chatbot.png') }}" alt="Chat">
+    </button>
+    
+    <div class="chat-box" id="chat-box">
+        <!-- כפתור סגירה בתוך חלון הצ'אט -->
+        <button class="chat-close-btn" onclick="minimizeChat()">&times;</button>
+        <div class="chat-header">Chat with the Bot</div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div id="messages-container">
+                <div class="chat-message bot-message">
+                    <div class="message-avatar">
+                        <img src="{{ url_for('static', filename='chatbot.png') }}" alt="Bot">
+                    </div>
+                    <div class="message-content-wrapper">
+                        <div class="message-text">
+                            Hi! I'm the CineMate bot 🎬 I'd love to help you find interesting movies or answer any questions about cinema!
+                        </div>
+                        <span class="message-time" id="welcome-time"></span>
+                    </div>
+                </div>
+            </div>
+            <!-- אנימציית ההקלדה תמיד תהיה אחרי הודעות הצ'אט -->
+            <div class="typing-indicator" id="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <form class="chat-form" id="chat-form">
+            <div class="input-group">
+                <input type="text" id="chat-input" class="chat-input" placeholder="Ask me about movies...">
+                <button type="submit" class="send-button">Send</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('chat-toggle');
+    const chatBox = document.getElementById('chat-box');
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('chat-input');
+    const messages = document.getElementById('chat-messages');
+
+    toggle.addEventListener('click', () => {
+        chatBox.style.display = chatBox.style.display === 'flex' ? 'none' : 'flex';
+        input.focus();
+    });
+
+    const now = new Date();
+    document.getElementById('welcome-time').textContent = now.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+
+    function addMessage(text, type, time = null) {
+        const now = new Date();
+        const currentTime = time || now.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+
+        const div = document.createElement('div');
+        div.className = `chat-message ${type}-message`;
+
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'message-avatar';
+
+        const avatarImg = document.createElement('img');
+        avatarImg.src = type === 'bot' ? 
+            "{{ url_for('static', filename='chatbot.png') }}" : 
+            "{{ url_for('static', filename='profile_images/user_' ~ user.user_id ~ '.png') }}";
+        avatarImg.onerror = function() {
+            this.onerror = null;
+            this.src = "{{ url_for('static', filename='profile_images/default.png') }}";
+        };
+        avatarImg.alt = type === 'bot' ? 'Bot' : 'User';
+        avatarDiv.appendChild(avatarImg);
+
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'message-content-wrapper';
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'message-text';
+        textDiv.textContent = text;
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'message-time';
+        timeSpan.textContent = currentTime;
+
+        contentWrapper.appendChild(textDiv);
+        contentWrapper.appendChild(timeSpan);
+
+        div.appendChild(avatarDiv);
+        div.appendChild(contentWrapper);
+
+        messages.querySelector('#messages-container').appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const message = input.value.trim();
+        if (!message) return;
+
+        // הוספת ההודעה של המשתמש
+        addMessage(message, 'user');
+        input.value = '';
+
+        // הצגת אנימציית ההקלדה
+        const typingIndicator = document.getElementById('typing-indicator');
+        const messagesContainer = document.getElementById('messages-container');
+        typingIndicator.style.display = 'block';
+        
+        // גלילה לתחתית כדי לראות את האנימציה
+        messages.scrollTop = messages.scrollHeight;
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+            const data = await response.json();
+            
+            // הסתרת אנימציית ההקלדה
+            typingIndicator.style.display = 'none';
+            
+            // הוספת התשובה מהבוט
+            addMessage(data.response, 'bot', data.time);
+        } catch (error) {
+            typingIndicator.style.display = 'none';
+            addMessage("Connection error. Please try again.", 'error');
+        }
+    }
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        sendMessage();
+    });
+});
+
+function minimizeChat() {
+    const chatBox = document.getElementById('chat-box');
+    const chatToggle = document.getElementById('chat-toggle');
+    
+    chatBox.style.display = 'none';
+    chatToggle.style.display = 'flex';
+}
+</script>
+
+</body>
+</html>

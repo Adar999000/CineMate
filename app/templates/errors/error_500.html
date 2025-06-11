@@ -1,0 +1,7 @@
+{% extends "layouts/base.html" %}
+
+{% block content %}
+<h2 class="my-4 text-center">500 - שגיאת שרת</h2>
+<p class="text-center">אירעה שגיאה פנימית. אנא נסה מאוחר יותר.</p>
+<a href="{{ url_for('main.index') }}" class="btn btn-primary d-block mx-auto">חזור לעמוד הבית</a>
+{% endblock %}

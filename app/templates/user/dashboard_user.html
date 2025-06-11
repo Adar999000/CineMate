@@ -1,0 +1,80 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+  <!-- 👤 ברוך הבא -->
+  <div class="d-flex align-items-center mb-5">
+    <img src="{{ url_for('static', filename='profile_images/user_' ~ user.user_id ~ '.png') }}"
+         onerror="this.onerror=null;this.src='{{ url_for('static', filename='profile_images/default.png') }}';"
+         class="rounded-circle shadow" width="50" alt="Profile">
+    <h4 class="ms-3 mt-2">ברוך הבא, {{ user.first_name }}!</h4>
+  </div>
+
+  <!-- 🎬 סרטים זמינים להשכרה -->
+  <h3 class="mt-4 mb-3">🎬 סרטים זמינים להשכרה</h3>
+  <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 g-4">
+    {% for movie in available_movies %}
+    <div class="col">
+      <div class="card h-100 bg-dark text-white border-light shadow-sm">
+        <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 250px; object-fit: cover;">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <h5 class="card-title">{{ movie.title }}</h5>
+          <p class="text-muted">{{ movie.genre }} • {{ movie.year }}</p>
+
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}"
+               class="btn btn-outline-info btn-sm w-50">מידע</a>
+            <form method="POST" action="{{ url_for('main.rent_movie', movie_id=movie.movie_id) }}" class="w-50">
+              <button class="btn btn-outline-light btn-sm w-100">השכר עכשיו</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="text-center mt-3">
+    <a href="{{ url_for('main.all_movies') }}" class="btn btn-outline-secondary btn-sm">תצוגה מלאה</a>
+  </div>
+
+  <!-- ⭐ סרטים מומלצים -->
+  <h3 class="mt-5 mb-3">⭐ סרטים מומלצים</h3>
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for i in range(3) %}
+    <div class="col">
+      <div class="card text-center bg-dark text-white p-5 shadow">
+        <h5 class="card-title">COMING SOON</h5>
+        <p class="text-muted">הפקה חדשה בדרך...</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="text-center mt-3">
+    <a href="{{ url_for('main.recommended_movies') }}" class="btn btn-outline-secondary btn-sm">לכל הסרטים המומלצים</a>
+  </div>
+
+  <!-- 📼 השכרות שלי -->
+  <h3 class="mt-5 mb-3">📼 הסרטים שהשכרתי</h3>
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for rental, movie in rentals %}
+    <div class="col">
+      <div class="card h-100 bg-secondary text-white shadow">
+        <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 250px; object-fit: cover;">
+        <div class="card-body">
+          <h5 class="card-title">{{ movie.title }}</h5>
+          <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}"
+          class="btn btn-outline-info btn-sm w-50">מידע</a>
+          <p class="card-text">הושכר בתאריך: {{ rental.rent_date.strftime('%Y-%m-%d') }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="text-center mt-3">
+    <a href="{{ url_for('main.my_rentals') }}" class="btn btn-outline-light btn-sm">לכל ההשכרות שלי</a>
+  </div>
+
+</div>
+
+{% endblock %}
