@@ -1,10 +1,12 @@
 {% extends "layouts/base.html" %}
 {% block content %}
 
-<div class="container mt-4 text-center">
-
-  <!-- 🧾 כותרת -->
-  <h2 class="mb-4">📼 ניהול כל ההשכרות</h2>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-light">⬅ חזור לדשבורד האדמין</a>
+        <h2 class="mb-0">📼 ניהול כל ההשכרות</h2>
+        <div style="width: 135px"></div>
+    </div>
 
   <!-- טבלה -->
   <div class="table-responsive">
@@ -28,10 +30,7 @@
           <td>{{ movie.title }}</td>
           <td>{{ rental.rent_date.strftime('%Y-%m-%d') }}</td>
           <td>
-            <form method="POST" action="{{ url_for('main.delete_rental', rental_id=rental.rental_id) }}"
-                  onsubmit="return confirm('האם אתה בטוח שברצונך למחוק את ההשכרה?');">
-              <button type="submit" class="btn btn-sm btn-outline-danger">🗑</button>
-            </form>
+            <button onclick="return confirmDelete({{ rental.rental_id }})" class="btn btn-sm btn-outline-danger">🗑</button>
           </td>
         </tr>
         {% endfor %}
@@ -39,11 +38,74 @@
     </table>
   </div>
 
-  <!-- חזור לדשבורד -->
-  <div class="mt-4">
-    <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-light">⬅ חזור לדשבורד מנהל</a>
-  </div>
 
 </div>
 
+<script>
+function confirmDelete(rentalId) {
+    if (confirm('האם אתה בטוח שברצונך למחוק את ההשכרה?')) {
+        fetch(`/rentals/delete/${rentalId}`, {
+            method: 'POST'
+        }).then(response => {
+            if (response.ok) {
+                response.json().then(data => {
+                    // Find and remove the current row
+                    const row = document.querySelector(`tr[data-rental-id="${rentalId}"]`);
+                    if (row) {
+                        if (data && data.rental_id) {
+                            // Replace with next rental
+                            row.innerHTML = `
+                                <td>${data.rental_id}</td>
+                                <td>${data.user_name}</td>
+                                <td>${data.email}</td>
+                                <td>${data.movie_title}</td>
+                                <td>${data.rent_date}</td>
+                                <td>
+                                    <button onclick='return confirmDelete(${data.rental_id});' class="btn btn-sm btn-outline-danger">🗑</button>
+                                </td>`;
+                            row.setAttribute('data-rental-id', data.rental_id);
+                        } else {
+                            row.remove();
+                            // Check if there are any rentals left
+                            if (document.querySelectorAll('tbody tr').length === 0) {
+                                document.querySelector('tbody').innerHTML = `
+                                    <tr>
+                                        <td colspan="6" class="text-center">
+                                            <div class="alert alert-info mb-0">
+                                                <h4 class="alert-heading">😊 אין השכרות להצגה</h4>
+                                            </div>
+                                        </td>
+                                    </tr>`;
+                            }
+                        }
+                    }
+                }).catch(() => {
+                    // If response is not JSON (204 No Content), just remove the row
+                    const row = document.querySelector(`tr[data-rental-id="${rentalId}"]`);
+                    if (row) {
+                        row.remove();
+                        if (document.querySelectorAll('tbody tr').length === 0) {
+                            document.querySelector('tbody').innerHTML = `
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        <div class="alert alert-info mb-0">
+                                            <h4 class="alert-heading">😊 אין השכרות להצגה</h4>
+                                        </div>
+                                    </td>
+                                </tr>`;
+                        }
+                    }
+                });
+            } else {
+                response.text().then(error => {
+                    alert('שגיאה בביטול ההשכרה: ' + error);
+                });
+            }
+        }).catch(error => {
+            alert('שגיאה בביטול ההשכרה: ' + error);
+        });
+    }
+    return false;
+}
+</script>
 {% endblock %}

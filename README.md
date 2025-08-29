@@ -27,40 +27,75 @@
 
 ## ⚙️ התקנה והגדרה
 
-### 1. הורדת הפרויקט
+### 1. דרישות מקדימות
+1. התקן את Python 3.11 או גרסה חדשה יותר מ-[python.org](https://www.python.org/downloads/)
+2. התקן את ODBC Driver 18 for SQL Server מ-[Microsoft](https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server)
+3. וודא ש-pip מותקן ומעודכן:
+   ```bash
+   python -m pip install --upgrade pip
+   ```
+4. התקן את Ollama מ-[ollama.ai](https://ollama.ai/download)
+
+### 2. הורדת הפרויקט
 ```bash
-git clone https://github.com/your-username/cinemate.git
+# העתקת הפרויקט
+git clone https://github.com/adar0/cinemate.git
 cd cinemate
 ```
 
-### 2. יצירת סביבה וירטואלית
+### 3. יצירת סביבה וירטואלית
 ```bash
+# יצירת סביבה חדשה
 python -m venv venv
+
+# הפעלת הסביבה
 # Windows
 venv\Scripts\activate
 # Linux/Mac
 source venv/bin/activate
 ```
 
-### 3. התקנת תלויות
+### 4. התקנת תלויות
 ```bash
+# התקנת כל החבילות הנדרשות
 pip install -r requirements.txt
+
+# הורדת מודל ה-AI
+ollama pull mistral
 ```
 
-### 4. הגדרת משתני סביבה
-צור קובץ `.env` בתיקיית הפרויקט:
+### 5. הגדרת משתני סביבה
+צור קובץ `.env` בתיקיית הפרויקט עם התוכן הבא:
 ```env
-SQLALCHEMY_DATABASE_URI=mssql+pyodbc://username:password@server/database?driver=ODBC+Driver+18+for+SQL+Server
-SECRET_KEY=your-secret-key
+# חיבור למסד הנתונים
+SQLALCHEMY_DATABASE_URI=mssql+pyodbc://username:password@CinemaDB.mssql.somee.com/CinemaDB?driver=ODBC+Driver+18+for+SQL+Server
+
+# מפתח הצפנה (שנה לערך מורכב)
+SECRET_KEY=your-very-long-and-secure-secret-key
+
+# הגדרות שירות האימייל
 MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-app-password
+MAIL_PASSWORD=your-gmail-app-password  # צור ב-Google Account -> Security -> App Passwords
 ```
 
-### 5. הרצת המערכת
+### 6. אתחול מסד הנתונים
 ```bash
+# יצירת טבלאות ונתוני בסיס
+flask db upgrade
+```
+
+### 7. הרצת המערכת
+```bash
+# הפעלת השרת
 python run.py
 ```
 המערכת תהיה זמינה בכתובת: `http://localhost:5000`
+
+### 8. בדיקת התקנה
+1. וודא שהשרת פועל ללא שגיאות
+2. היכנס ל-`http://localhost:5000`
+3. נסה להירשם ולהתחבר
+4. בדוק שהצ'אטבוט מגיב
 
 ## 🔑 הרשאות משתמשים
 

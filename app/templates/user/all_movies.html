@@ -3,6 +3,10 @@
 
 <h2 class="my-4 text-center">🎬 כל הסרטים באתר</h2>
 
+<div class="mb-4 ms-3">
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light">⬅ חזור לדשבורד</a>
+</div>
+
 <div class="row row-cols-1 row-cols-md-3 g-4">
   {% for movie in movies %}
   <div class="col">

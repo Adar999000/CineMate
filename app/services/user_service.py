@@ -33,3 +33,12 @@ def update_user_by_admin(user_id, first_name, last_name, email, password):
         user.password = password
         db.session.commit()
     return user
+
+def delete_user(user_id):
+    """מחיקת משתמש לפי ID"""
+    user = User.query.get(user_id)
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        return True
+    return False

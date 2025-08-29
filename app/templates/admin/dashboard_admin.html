@@ -1,5 +1,26 @@
 {% extends "layouts/base.html" %}
+
+{% block styles %}
+<style>
+    body {
+        background: url("{{ url_for('static', filename='adminwallpaper.jpg') }}") !important;
+    }
+    #bg-video {
+        position: fixed;
+        width: 100%;
+        height: auto;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: -1;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<video autoplay muted loop id="bg-video">
+    <source src="{{ url_for('static', filename='adminwallpaper.mp4') }}" type="video/mp4">
+</video>
 
 <div class="container text-center">
 

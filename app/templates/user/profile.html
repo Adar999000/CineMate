@@ -14,7 +14,7 @@
 <!-- כפתורי עריכה וחזרה -->
 <div class="text-center mb-4 d-flex justify-content-center gap-3">
     <a href="{{ url_for('main.edit_profile') }}" class="btn btn-outline-info">✏ ערוך פרטים</a>
-    <a href="{{ url_for('main.admin_dashboard') if user.type == 'admin' else url_for('main.user_dashboard') }}" class="btn btn-outline-secondary">⬅ חזרה לדשבורד</a>
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">⬅ חזרה לדשבורד</a>
 </div>
 
 <!-- פרטי המשתמש -->

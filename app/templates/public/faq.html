@@ -42,10 +42,38 @@
                 </div>
             </div>
         </div>
+
+
+        <div class="accordion-item bg-dark text-light border-light">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#q5">
+                    איך משתמשים בצ'אטבוט?
+                </button>
+            </h2>
+            <div id="q5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    הצ'אטבוט נמצא בצד ימין למטה בכל עמוד. לחץ עליו ושאל כל שאלה הקשורה לסרטים - הוא ישמח לעזור!
+                </div>
+            </div>
+        </div>
+
+
+        <div class="accordion-item bg-dark text-light border-light">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#q7">
+                    מה עושים אם יש בעיה טכנית בצפייה?
+                </button>
+            </h2>
+            <div id="q7" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    ניתן לפנות לתמיכה הטכנית דרך עמוד "צור קשר" או לשוחח עם הצ'אטבוט שלנו שיעזור לפתור את הבעיה.
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <!-- כפתור חזרה לדשבורד -->
 <div class="mt-4">
-    <a href="{{ url_for('main.user_dashboard') }}" class="btn btn-outline-light">⬅ חזור לדשבורד</a>
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light">⬅ חזור לדשבורד</a>
 </div>
 {% endblock %}

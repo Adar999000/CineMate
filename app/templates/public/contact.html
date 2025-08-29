@@ -6,11 +6,15 @@
     <form method="POST" class="w-50 mx-auto">
         <div class="mb-3">
             <label class="form-label">שם מלא (באנגלית)</label>
-            <input type="text" name="name" class="form-control" required>
+            <input type="text" name="name" class="form-control" 
+                   value="{{ current_user.first_name + ' ' + current_user.last_name if current_user.is_authenticated else '' }}"
+                   required>
         </div>
         <div class="mb-3">
             <label class="form-label">כתובת אימייל</label>
-            <input type="email" name="email" class="form-control" required>
+            <input type="email" name="email" class="form-control" 
+                   value="{{ current_user.email if current_user.is_authenticated else '' }}"
+                   required>
         </div>
         <div class="mb-3">
             <label class="form-label">הודעה (באנגלית)</label>
@@ -23,6 +27,6 @@
 </div>
 <!-- כפתור חזרה לדשבורד -->
 <div class="mt-4">
-    <a href="{{ url_for('main.user_dashboard') }}" class="btn btn-outline-light">⬅ חזור לדשבורד</a>
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light">⬅ חזור לדשבורד</a>
 </div>
 {% endblock %}

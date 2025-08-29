@@ -1,75 +1,246 @@
 {% extends "layouts/base.html" %}
+
+{% block styles %}
+<style>
+    #bg-video {
+        position: fixed;
+        width: 100%;
+        height: auto;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: -1;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<video autoplay muted loop id="bg-video">
+    <source src="{{ url_for('static', filename='wallpaper.mp4') }}" type="video/mp4">
+</video>
 
 <div class="container mt-4">
 
   <!-- 👤 ברוך הבא -->
-  <div class="d-flex align-items-center mb-5">
-    <img src="{{ url_for('static', filename='profile_images/user_' ~ user.user_id ~ '.png') }}"
-         onerror="this.onerror=null;this.src='{{ url_for('static', filename='profile_images/default.png') }}';"
-         class="rounded-circle shadow" width="50" alt="Profile">
-    <h4 class="ms-3 mt-2">ברוך הבא, {{ user.first_name }}!</h4>
+  <div class="d-flex justify-content-center align-items-center mb-5">
+    <div class="d-flex align-items-center">
+      <img src="{{ url_for('static', filename='profile_images/user_' ~ user.user_id ~ '.png') }}"
+           onerror="this.onerror=null;this.src='{{ url_for('static', filename='profile_images/default.png') }}';"
+           class="rounded-circle shadow me-3" width="70" alt="Profile">
+      <h2 class="mb-0">ברוך הבא, {{ user.first_name }}!</h2>
+    </div>
   </div>
 
   <!-- 🎬 סרטים זמינים להשכרה -->
   <h3 class="mt-4 mb-3">🎬 סרטים זמינים להשכרה</h3>
-  <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 g-4">
-    {% for movie in available_movies %}
-    <div class="col">
-      <div class="card h-100 bg-dark text-white border-light shadow-sm">
-        <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 250px; object-fit: cover;">
-        <div class="card-body d-flex flex-column justify-content-between">
-          <h5 class="card-title">{{ movie.title }}</h5>
-          <p class="text-muted">{{ movie.genre }} • {{ movie.year }}</p>
-
-          <div class="d-flex gap-2">
-            <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}"
-               class="btn btn-outline-info btn-sm w-50">מידע</a>
-            <form method="POST" action="{{ url_for('main.rent_movie', movie_id=movie.movie_id) }}" class="w-50">
-              <button class="btn btn-outline-light btn-sm w-100">השכר עכשיו</button>
-            </form>
+  <style>
+    .movie-carousel {
+      position: relative;
+      overflow: hidden;
+      min-height: 500px;
+      will-change: transform;
+    }
+    .movie-slide {
+      opacity: 0;
+      visibility: hidden;
+      position: absolute;
+      width: 100%;
+      transition: all 0.75s ease;
+      transform: translateX(100%);
+      will-change: transform, opacity;
+    }
+    .movie-slide.active {
+      opacity: 1;
+      visibility: visible;
+      position: relative;
+      transform: translateX(0);
+    }
+    .movie-slide.prev {
+      transform: translateX(-100%);
+    }
+    .movie-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 1rem;
+    }
+    .movie-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .movie-dot:hover {
+      background-color: rgba(255, 255, 255, 0.5);
+    }
+    .movie-dot.active {
+      background-color: rgba(255, 255, 255, 0.9);
+    }
+  </style>
+  <div class="movie-carousel">
+    {% for i in range(0, available_movies|length, 3) %}
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-3 g-4 movie-slide {% if loop.first %}active{% endif %}">
+      {% for movie in available_movies[i:i+3] if movie %}
+      <div class="col">
+        <div class="card h-100 bg-dark text-white border-light shadow-sm">
+          <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 250px; object-fit: cover;" onerror="this.src='{{ url_for('static', filename='movies/default.jpg') }}';">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title text-white">{{ movie.title }}</h5>
+            <p class="text-white-50 mb-3">{{ movie.genre }} • {{ movie.year }}</p>
+            <div class="mt-auto d-flex justify-content-between">
+              <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}"
+                 class="btn btn-outline-info btn-sm flex-grow-1 me-2">מידע</a>
+              <form method="POST" action="{{ url_for('main.rent_movie', movie_id=movie.movie_id) }}" class="flex-grow-1">
+                <button type="submit" class="btn btn-outline-light btn-sm w-100">השכרה</button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
+      {% endfor %}
     </div>
     {% endfor %}
+    <div class="movie-dots">
+      {% for i in range(0, available_movies|length, 3) %}
+      <div class="movie-dot {% if loop.first %}active{% endif %}" data-slide="{{ loop.index0 }}"></div>
+      {% endfor %}
+    </div>
   </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const slides = document.querySelectorAll('.movie-slide');
+      const dots = document.querySelectorAll('.movie-dot');
+      let currentSlide = 0;
+      let slideInterval;
+
+      function showSlide(index) {
+        slides.forEach(slide => {
+          slide.classList.remove('active', 'prev');
+        });
+        dots.forEach(dot => dot.classList.remove('active'));
+        
+        const prevIndex = (index - 1 + slides.length) % slides.length;
+        slides[prevIndex].classList.add('prev');
+        slides[index].classList.add('active');
+        dots[index].classList.add('active');
+      }
+
+      function nextSlide() {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+      }
+
+      function startSlideshow() {
+        slideInterval = setInterval(nextSlide, 8000);
+      }
+
+      function stopSlideshow() {
+        clearInterval(slideInterval);
+      }
+
+      dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+          currentSlide = index;
+          showSlide(currentSlide);
+          stopSlideshow();
+          startSlideshow();
+        });
+      });
+
+      const carousel = document.querySelector('.movie-carousel');
+      carousel.addEventListener('mouseenter', stopSlideshow);
+      carousel.addEventListener('mouseleave', startSlideshow);
+
+      showSlide(0);
+      startSlideshow();
+    });
+  </script>
   <div class="text-center mt-3">
-    <a href="{{ url_for('main.all_movies') }}" class="btn btn-outline-secondary btn-sm">תצוגה מלאה</a>
+    <a href="{{ url_for('main.all_movies') }}" class="btn btn-outline-secondary btn-sm">לכל הסרטים שלנו </a>
   </div>
 
-  <!-- ⭐ סרטים מומלצים -->
-  <h3 class="mt-5 mb-3">⭐ סרטים מומלצים</h3>
-  <div class="row row-cols-1 row-cols-md-3 g-4">
-    {% for i in range(3) %}
-    <div class="col">
-      <div class="card text-center bg-dark text-white p-5 shadow">
-        <h5 class="card-title">COMING SOON</h5>
-        <p class="text-muted">הפקה חדשה בדרך...</p>
+  <!-- סרטים מומלצים -->
+  <div class="container mt-4">
+    <div class="row">
+      <div class="col-12">
+        <h3 class="text-light mb-4">
+          <i class="fas fa-star text-warning"></i> ⭐ סרטים מומלצים
+        </h3>
       </div>
     </div>
-    {% endfor %}
-  </div>
-  <div class="text-center mt-3">
-    <a href="{{ url_for('main.recommended_movies') }}" class="btn btn-outline-secondary btn-sm">לכל הסרטים המומלצים</a>
+    <div class="row">
+      {% if recommended_movies %}
+        {% for movie in recommended_movies %}
+          <div class="col-md-4 mb-4">
+            <div class="card bg-dark text-white h-100">
+              <div class="position-relative">
+                <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 250px; object-fit: cover;" onerror="this.src='{{ url_for('static', filename='movies/default.jpg') }}';">
+                <div class="position-absolute top-0 end-0 m-2">
+                  <span class="badge bg-warning text-dark fs-4">
+                    {% if movie.recommendation_rank == 1 %}🥇
+                    {% elif movie.recommendation_rank == 2 %}🥈
+                    {% else %}🥉
+                    {% endif %}
+                  </span>
+                </div>
+              </div>
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title text-white">{{ movie.title }}</h5>
+                <p class="text-white-50 mb-3">{{ movie.genre }} • {{ movie.year }}</p>
+                <div class="mt-auto d-flex justify-content-between">
+                  <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}"
+                     class="btn btn-outline-info btn-sm flex-grow-1 me-2">מידע</a>
+                  <form method="POST" action="{{ url_for('main.rent_movie', movie_id=movie.movie_id) }}" class="flex-grow-1">
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100">השכרה</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="col-12">
+          <div class="p-5 bg-dark text-light rounded-3 text-center">
+            <h4>✨ המלצות מותאמות אישית בדרך אליך!</h4>
+            <p class="lead">השכר את הסרט הראשון שלך ונתחיל להתאים לך המלצות מיוחדות לפי הטעם שלך 🎯</p>
+            <p>אנחנו משתמשים במערכת חכמה שלומדת את ההעדפות שלך ומציעה סרטים שתאהב 🤖</p>
+          </div>
+        </div>
+      {% endif %}
+    </div>
   </div>
 
   <!-- 📼 השכרות שלי -->
   <h3 class="mt-5 mb-3">📼 הסרטים שהשכרתי</h3>
   <div class="row row-cols-1 row-cols-md-3 g-4">
-    {% for rental, movie in rentals %}
-    <div class="col">
-      <div class="card h-100 bg-secondary text-white shadow">
-        <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 250px; object-fit: cover;">
-        <div class="card-body">
-          <h5 class="card-title">{{ movie.title }}</h5>
-          <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}"
-          class="btn btn-outline-info btn-sm w-50">מידע</a>
-          <p class="card-text">הושכר בתאריך: {{ rental.rent_date.strftime('%Y-%m-%d') }}</p>
+    {% if rentals %}
+      {% for rental, movie in rentals[:3] %}
+        <div class="col rental-card" data-rental-id="{{ rental.rental_id }}">
+          <div class="card h-100 bg-secondary text-white shadow">
+            <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 250px; object-fit: cover;" onerror="this.src='{{ url_for('static', filename='movies/default.jpg') }}';">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title text-white">{{ movie.title }}</h5>
+              <p class="text-white-50 mb-3">{{ movie.genre }} • {{ movie.year }}</p>
+              <div class="d-flex align-items-center gap-2">
+                <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}"
+                   class="btn btn-outline-info btn-sm">מידע</a>
+                <button onclick="return confirmDelete({{ rental.rental_id }})" class="btn btn-danger btn-sm">✕</button>
+              </div>
+              <p class="text-white-50 mt-2">הושכר בתאריך: {{ rental.rent_date.strftime('%Y-%m-%d') }}</p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="col-12 text-center">
+        <div class="p-5 bg-dark text-light rounded-3">
+          <h4>🎬 עדיין לא השכרת סרטים</h4>
+          <p class="lead">בוא נתחיל את החוויה הקולנועית שלך! גלול למעלה ובחר סרט שמעניין אותך 🍿</p>
         </div>
       </div>
-    </div>
-    {% endfor %}
+    {% endif %}
   </div>
   <div class="text-center mt-3">
     <a href="{{ url_for('main.my_rentals') }}" class="btn btn-outline-light btn-sm">לכל ההשכרות שלי</a>
@@ -77,4 +248,75 @@
 
 </div>
 
+<script>
+function confirmDelete(rentalId) {
+    if (confirm('האם אתה בטוח שברצונך לבטל השכרה זו?')) {
+        fetch(`/rentals/delete/${rentalId}`, {
+            method: 'POST'
+        }).then(response => {
+            if (response.ok) {
+                response.json().then(data => {
+                    const card = document.querySelector(`.rental-card[data-rental-id="${rentalId}"]`);
+                    if (card) {
+                        if (data && data.rental_id) {
+                            // Replace with next rental
+                            card.innerHTML = `
+                                <div class="card h-100 bg-secondary text-white shadow">
+                                    <img src="${data.movie_poster || '/static/movies/default.jpg'}" class="card-img-top" 
+                                         alt="${data.movie_title}" style="height: 250px; object-fit: cover;" 
+                                         onerror="this.src='/static/movies/default.jpg';">
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title text-white">${data.movie_title}</h5>
+                                        <p class="text-white-50 mb-3">${data.movie_genre || ''} • ${data.movie_year || ''}</p>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <a href="/movie/${data.movie_id}" class="btn btn-outline-info btn-sm">מידע</a>
+                                            <button onclick="return confirmDelete(${data.rental_id});" class="btn btn-danger btn-sm">✕</button>
+                                        </div>
+                                        <p class="text-white-50 mt-2">הושכר בתאריך: ${data.rent_date}</p>
+                                    </div>
+                                </div>`;
+                            card.setAttribute('data-rental-id', data.rental_id);
+                        } else {
+                            card.remove();
+                            if (document.querySelectorAll('.rental-card').length === 0) {
+                                const emptyState = `
+                                    <div class="col-12 text-center">
+                                        <div class="p-5 bg-dark text-light rounded-3">
+                                            <h4>🎥 עדיין לא השכרת סרטים</h4>
+                                            <p class="lead">בוא נתחיל את החוויה הקולנועית שלך! גלול למעלה ובחר סרט שמעניין אותך 🍿</p>
+                                        </div>
+                                    </div>`;
+                                document.querySelector('.row').innerHTML = emptyState;
+                            }
+                        }
+                    }
+                }).catch(() => {
+                    // If response is not JSON (204 No Content), just remove the row
+                    const card = document.querySelector(`.rental-card[data-rental-id="${rentalId}"]`);
+                    if (card) {
+                        card.remove();
+                        if (document.querySelectorAll('.rental-card').length === 0) {
+                            const emptyState = `
+                                <div class="col-12 text-center">
+                                    <div class="p-5 bg-dark text-light rounded-3">
+                                        <h4>🎥 עדיין לא השכרת סרטים</h4>
+                                        <p class="lead">בוא נתחיל את החוויה הקולנועית שלך! גלול למעלה ובחר סרט שמעניין אותך 🍿</p>
+                                    </div>
+                                </div>`;
+                            document.querySelector('.row').innerHTML = emptyState;
+                        }
+                    }
+                });
+            } else {
+                response.text().then(error => {
+                    alert('שגיאה בביטול ההשכרה: ' + error);
+                });
+            }
+        }).catch(error => {
+            alert('שגיאה בביטול ההשכרה: ' + error);
+        });
+    }
+    return false;
+}
+</script>
 {% endblock %}

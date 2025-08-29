@@ -1,28 +1,53 @@
 {% extends "layouts/base.html" %}
 
 {% block content %}
-<h2 class="text-center my-4">ההשכרות שלי</h2>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>ההשכרות שלי</h2>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-light">⬅ חזור לדשבורד</a>
+    </div>
 
-<div class="row row-cols-1 row-cols-md-4 g-4">
-    {% for rental, movie in rentals %}
-    <div class="col">
-        <div class="card h-100 bg-secondary text-white">
-            <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}">
-            <div class="card-body">
-                <h5 class="card-title">{{ movie.title }}</h5>
-                <p class="card-text">הושכר בתאריך: {{ rental.rent_date.strftime('%Y-%m-%d') }}</p>
-                <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}"
-                class="btn btn-outline-info btn-sm w-50">מידע</a>
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+        {% for rental, movie in rentals %}
+        <div class="col rental-card" data-rental-id="{{ rental.rental_id }}">
+            <div class="card h-100 bg-secondary text-white">
+                <div class="position-relative">
+                    <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}">
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ movie.title }}</h5>
+                    <p class="card-text">הושכר בתאריך: {{ rental.rent_date.strftime('%Y-%m-%d') }}</p>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}"
+                           class="btn btn-outline-info btn-sm">מידע</a>
+                        <form method="post" action="/rentals/delete/{{ rental.rental_id }}" style="display: inline">
+                            <button type="submit" onclick="return confirm('האם אתה בטוח שברצונך לבטל השכרה זו?')" class="btn btn-danger btn-sm">✕</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    {% else %}
-    <div class="col-12 text-center mt-4">
-        <div class="alert alert-info">
-            <h4 class="alert-heading">😢 אין השכרות להצגה</h4>
-            <p class="mb-0">עדיין לא השכרת סרטים. <a href="{{ url_for('main.all_movies') }}" class="alert-link">לחץ כאן</a> לצפייה בסרטים זמינים להשכרה.</p>
+        {% else %}
+        <div class="col-12 text-center mt-4">
+            <div class="alert alert-info">
+                <h4 class="alert-heading">😢 אין השכרות להצגה</h4>
+                <p class="mb-0">עדיין לא השכרת סרטים. <a href="{{ url_for('main.all_movies') }}" class="alert-link">לחץ כאן</a> לצפייה בסרטים זמינים להשכרה.</p>
+            </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
+
+<script>
+function deleteRental(rentalId) {
+    if (confirm('האם אתה בטוח שברצונך לבטל השכרה זו?')) {
+        fetch(`/rentals/delete/${rentalId}`, {
+            method: 'POST'
+        }).then(() => {
+            window.location.reload();
+        });
+    }
+    return false;
+}
+</script>
 {% endblock %}

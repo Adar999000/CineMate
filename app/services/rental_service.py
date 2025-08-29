@@ -32,3 +32,9 @@ def get_user_rentals_with_movie_details(user_id):
         .filter(Rental.user_id == user_id) \
         .order_by(Rental.rent_date.desc()) \
         .all()
+
+def delete_rental(rental_id):
+    """מחיקת השכרה"""
+    rental = Rental.query.get_or_404(rental_id)
+    db.session.delete(rental)
+    db.session.commit()
