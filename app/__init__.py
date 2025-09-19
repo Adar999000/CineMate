@@ -16,7 +16,7 @@ def create_app():
         'pool_recycle': 280,  # Recycle connections after 280 seconds
         'pool_pre_ping': True 
     }
-    app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)
+    app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False) 
 
     db.init_app(app)
     mail.init_app(app)
