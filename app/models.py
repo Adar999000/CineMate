@@ -21,8 +21,8 @@ class Movie(db.Model):
     genre = db.Column(db.String(50))
     year = db.Column(db.Integer)
     poster_url = db.Column(db.String(255), default='movies/default.jpg')
-    description = db.Column(db.Text)  # נוספה העמודה
-    tags = db.Column(db.String(255))  # אם עדיין לא קיים
+    description = db.Column(db.Text) 
+    tags = db.Column(db.String(255)) 
 
 class ContactSubmission(db.Model):
     __tablename__ = 'contact_submissions'

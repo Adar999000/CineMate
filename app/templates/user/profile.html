@@ -40,7 +40,10 @@
             <div class="card-body d-flex flex-column justify-content-between">
                 <h5 class="card-title">{{ movie.title }}</h5>
                 <p class="card-text">הושכר בתאריך: {{ rental.rent_date.strftime('%Y-%m-%d') }}</p>
-                <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}" class="btn btn-outline-info btn-sm mt-2">מידע</a>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('main.movie_details', movie_id=movie.movie_id) }}" class="btn btn-outline-info btn-sm">מידע</a>
+                    <button onclick="confirmDeleteRental({{ rental.rental_id }})" class="btn btn-outline-danger btn-sm">✕</button>
+                </div>
             </div>
         </div>
     </div>
@@ -55,4 +58,15 @@
 </div>
 {% endif %}
 
+<script>
+function confirmDeleteRental(rentalId) {
+    if (confirm('האם אתה בטוח שברצונך לבטל השכרה זו?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/rentals/delete/${rentalId}`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
 {% endblock %}

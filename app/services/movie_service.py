@@ -26,26 +26,36 @@ def update_movie(movie_id, **kwargs):
         db.session.rollback()
         raise e
 
-def get_recommended_movies_by_tags(user_rentals, limit=3):
-    """
-    מחזיר המלצות סרטים על בסיס תגיות מסרטים שהמשתמש צפה בהם
-    """
-    # מקבל את כל התגיות מסרטים שהמשתמש צפה בהם
+def get_recommended_movies(user_id, limit=3):
+    """מקבל המלצות סרטים מותאמות אישית למשתמש לפי תגיות"""
+    from app.services.rental_service import get_user_rentals_with_movie_details
+    from collections import Counter
+    
+    # קבלת סרטים מושכרים של המשתמש
+    rentals = get_user_rentals_with_movie_details(user_id)
+    rented_movies = [movie for rental, movie in rentals]
+    
+    # אם אין היסטוריה, החזר רשימה ריקה
+    if not rented_movies:
+        return []
+    
+    # איסוף תגיות המשתמש
     user_movie_tags = []
-    for rental, movie in user_rentals:
+    for rental, movie in rentals:
         if movie.tags:
             user_movie_tags.extend(tag.strip() for tag in movie.tags.split(','))
     
-    # מונה את התגיות הנפוצות ביותר
+    # ספירת תדירות תגיות
     tag_counter = Counter(user_movie_tags)
     if not tag_counter:
         return []
     
-    # מקבל את כל הסרטים הזמינים שאינם הושכרו על ידי המשתמש
-    rented_movie_ids = {movie.movie_id for _, movie in user_rentals}
-    available_movies = Movie.query.filter(~Movie.movie_id.in_(rented_movie_ids)).all()
+    # קבלת סרטים זמינים שאינם מושכרים
+    rented_movie_ids = {movie.movie_id for _, movie in rentals}
+    all_movies = get_all_movies() or []
+    available_movies = [movie for movie in all_movies if movie.movie_id not in rented_movie_ids]
     
-    # מדרג סרטים לפי התאמה לתגיות המועדפות
+    # דירוג סרטים לפי התאמה לתגיות
     movie_scores = []
     for movie in available_movies:
         if not movie.tags:
@@ -56,6 +66,38 @@ def get_recommended_movies_by_tags(user_rentals, limit=3):
         if score > 0:
             movie_scores.append((score, movie.movie_id, movie))
     
-    # מחזיר את הסרטים המתאימים ביותר
+    # מיון והחזרת הסרטים המתאימים ביותר
     recommended = [movie for _, _, movie in sorted(movie_scores, reverse=True)][:limit]
-    return recommended
+    
+    return [
+        {
+            'movie_id': movie.movie_id,
+            'title': movie.title,
+            'genre': movie.genre,
+            'year': movie.year,
+            'poster_url': movie.poster_url,
+            'recommendation_rank': i,
+            'tags': movie.tags
+        }
+        for i, movie in enumerate(recommended, 1)
+    ]
+
+def get_available_movies(user_id):
+    """מחזיר רשימת סרטים שהמשתמש לא שכר עדיין"""
+    from app.services.rental_service import get_user_rentals_with_movie_details
+    
+    rentals = get_user_rentals_with_movie_details(user_id)
+    rented_ids = [movie.movie_id for rental, movie in rentals]
+    all_movies = get_all_movies() or []
+    
+    return [
+        {
+            'movie_id': movie.movie_id,
+            'title': movie.title,
+            'genre': movie.genre,
+            'year': movie.year,
+            'poster_url': movie.poster_url
+        }
+        for movie in all_movies
+        if movie.movie_id not in rented_ids
+    ]

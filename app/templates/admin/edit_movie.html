@@ -35,17 +35,12 @@
 
         <div class="mb-3">
             <label class="form-label">תגיות (מופרדות בפסיקים)</label>
-            <input type="text" name="tags" class="form-control" value="{{ movie.tags }}">
+            <input type="text" name="tags" class="form-control" value="{{ movie.tags }}" required>
         </div>
 
         <div class="mb-3">
             <label class="form-label">כתובת URL של פוסטר</label>
-            <input type="url" name="poster_url" class="form-control" value="{{ movie.poster_url }}">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">או העלאת תמונה חדשה</label>
-            <input type="file" name="poster_file" class="form-control">
+            <input type="url" name="poster_url" class="form-control" value="{{ movie.poster_url }}" required>
         </div>
 
         <button type="submit" class="btn btn-success">💾 שמור</button>

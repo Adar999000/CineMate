@@ -15,7 +15,7 @@ from app.services.user_service import (
     get_user_by_id, get_all_users, get_user_by_email_password,
     create_new_user, user_exists, get_user_by_email, update_user_by_admin
 )
-from app.services.movie_service import get_movie_by_id, get_all_movies
+from app.services.movie_service import get_movie_by_id, get_all_movies, get_recommended_movies, get_available_movies
 from app.services.rental_service import (
     create_rental, get_all_rentals_with_details, get_user_rentals_with_movie_details
 )
@@ -124,46 +124,12 @@ def dashboard():
     
     user = get_user_by_id(current_user.user_id)
     rentals = get_user_rentals_with_movie_details(user.user_id)
-    all_movies = get_all_movies() or []
-    
-    rented_movies = [movie for rental, movie in rentals]
-    rented_ids = [m.movie_id for m in rented_movies]
-    rented_genres = {m.genre for m in rented_movies if m.genre}
-
-    available_movies = [
-        {
-            'movie_id': movie.movie_id,
-            'title': movie.title,
-            'genre': movie.genre,
-            'year': movie.year,
-            'poster_url': movie.poster_url
-        }
-        for movie in all_movies
-        if movie.movie_id not in rented_ids
-    ]
-    
-    recommended = [
-        movie for movie in all_movies
-        if movie.movie_id not in rented_ids and movie.genre in rented_genres
-    ][:3]
-    
-    recommended_with_rank = [
-        {
-            'movie_id': movie.movie_id,
-            'title': movie.title,
-            'genre': movie.genre,
-            'year': movie.year,
-            'poster_url': movie.poster_url,
-            'recommendation_rank': i
-        }
-        for i, movie in enumerate(recommended, 1)
-    ]
     
     return render_template('user/dashboard_user.html',
                          user=current_user,
-                         available_movies=available_movies,
                          rentals=rentals,
-                         recommended_movies=recommended_with_rank)
+                         available_movies=get_available_movies(user.user_id),
+                         recommended_movies=get_recommended_movies(user.user_id))
 
 # ----- ניהול פרופיל -----
 @bp.route('/profile')
@@ -342,7 +308,7 @@ def admin_edit_user(user_id):
         return redirect(url_for('main.admin_users_list'))
 
     if request.method == 'POST':
-        # אם זו בקשה לשליחת מייל
+        
         if 'send_email' in request.form:
             try:
                 subject = "📧 הסיסמה שלך למערכת CineMate"
@@ -428,19 +394,16 @@ def add_movie():
         tags = request.form['tags']
         poster_url = request.form['poster_url']
 
-        # שמירת פוסטר אם הועלה קובץ
-        if 'poster_file' in request.files:
-            file = request.files['poster_file']
-            if file and file.filename != '':
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(current_app.root_path, 'static', 'movie_posters', filename)
-                file.save(filepath)
-                poster_url = url_for('static', filename=f'movie_posters/{filename}')
-
-        # הוספה למסד נתונים
-        from app.models import Movie
-        new_movie = Movie(title=title, year=year, genre=genre, description=description, tags=tags, poster_url=poster_url)
-        db.session.add(new_movie)
+        # יצירת סרט חדש
+        movie = Movie(
+            title=title,
+            year=year,
+            genre=genre,
+            description=description,
+            tags=tags,
+            poster_url=poster_url
+        )
+        db.session.add(movie)
         db.session.commit()
         flash('🎬 הסרט נוסף בהצלחה!', 'success')
         return redirect(url_for('main.admin_edit_movies'))
@@ -580,10 +543,6 @@ def delete_submission(submission_id):
 # ============================================
 
 # ----- דפי מידע -----
-@bp.route('/about')
-def about():
-    return render_template('public/about.html', user=current_user)
-
 @bp.route('/faq')
 def faq():
     return render_template('public/faq.html', user=current_user)

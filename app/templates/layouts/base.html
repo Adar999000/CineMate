@@ -83,7 +83,6 @@
                 </li>
                 {% endif %}
 
-                <!-- נוספו קישורים נוספים קבועים -->
                 {% if not current_user.is_authenticated or current_user.type != 'admin' %}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('main.faq') }}">❓ שאלות נפוצות</a>

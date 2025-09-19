@@ -44,13 +44,13 @@ class MovieChatbot:
                 base_url="http://localhost:11434",
                 model="mistral",
                 temperature=0.1,
-                num_ctx=512,      # Reduced context
-                num_predict=100,  # Allow longer responses
-                top_k=3,         # More focused
-                top_p=0.1,       # Less random
+                num_ctx=512,      
+                num_predict=100,  
+                top_k=3,         
+                top_p=0.1,       
                 repeat_penalty=1.1,
-                num_thread=8,    # More threads
-                stop=["Question:", "Human:", "User:"]  # Allow multiple sentences
+                num_thread=8,    
+                stop=["Question:", "Human:", "User:"]
             )
             logger.info("Model initialized successfully")
 

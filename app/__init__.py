@@ -11,10 +11,10 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object('app.config')
 
-    # Configure SQLAlchemy engine options for better connection pooling
+    
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_recycle': 280,  # Recycle connections after 280 seconds
-        'pool_pre_ping': True # Check connection before use
+        'pool_pre_ping': True 
     }
     app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)
 
