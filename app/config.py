@@ -3,9 +3,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Database configuration
-SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 
-    "mssql+pyodbc://Adar_SQLLogin_1:sp3bjl1ch2@CinemaDB.mssql.somee.com/CinemaDB?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=yes")
+# Database configuration - PostgreSQL for Render, SQL Server for local
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+    # Fix for newer SQLAlchemy versions
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
+SQLALCHEMY_DATABASE_URI = DATABASE_URL or "mssql+pyodbc://Adar_SQLLogin_1:sp3bjl1ch2@CinemaDB.mssql.somee.com/CinemaDB?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=yes"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SECRET_KEY = os.environ.get('SECRET_KEY', 'supersecretkey')
 
