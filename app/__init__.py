@@ -27,4 +27,11 @@ def create_app():
     from .routes import bp as main_bp
     app.register_blueprint(main_bp)
 
+    # Create database tables if they don't exist
+    with app.app_context():
+        try:
+            db.create_all()
+        except Exception as e:
+            print(f"Database creation error: {e}")
+
     return app
