@@ -626,29 +626,29 @@ def inject_new_submissions_count():
     return dict(new_submissions_count=0)
 
 # ----- שליחת מיילים -----
+import os
 def send_password_email(recipient_email, password):
-    sender_email = "adar04954@gmail.com"
-    sender_password = "ehrf ajby ukoo djsj" # ⚠ שים לב: השתמש בסיסמת אפליקציה
+    sender_email = os.environ.get('MAIL_USERNAME', 'adar04954@gmail.com')
+    sender_password = os.environ.get('MAIL_PASSWORD', 'ehrf ajby ukoo djsj')
 
     subject = "CineMate – שחזור סיסמה"
     body = f"""
-    שלום,
+שלום,
     
-    לפי בקשתך, הסיסמה שלך למערכת CineMate היא:
+לפי בקשתך, הסיסמה שלך למערכת CineMate היא:
     
-    🔐 סיסמה: {password}
+🔐 סיסמה: {password}
     
-    אם לא ביקשת זאת, התעלם מהודעה זו.
+אם לא ביקשת זאת, התעלם מהודעה זו.
     
-    בברכה,
-    צוות CineMate 🎬
+בברכה,
+צוות CineMate 🎬
     """
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = recipient_email
     msg['Subject'] = subject
-
     msg.attach(MIMEText(body, 'plain'))
 
     try:
@@ -658,4 +658,6 @@ def send_password_email(recipient_email, password):
         server.send_message(msg)
         server.quit()
     except Exception as e:
-        print(f"❌ שגיאה בשליחת המייל: {e}")
+        print(f"❌ שגיאה בשליחת מייל: {e}")
+        return False
+    return True

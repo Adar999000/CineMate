@@ -1,0 +1,166 @@
+[1mdiff --git a/app/services/ai_service.py b/app/services/ai_service.py[m
+[1mindex 475d0af..e6acec4 100644[m
+[1m--- a/app/services/ai_service.py[m
+[1m+++ b/app/services/ai_service.py[m
+[36m@@ -1,9 +1,10 @@[m
+[32m+[m[32mimport os[m
+[32m+[m[32mimport time[m
+[32m+[m[32mimport logging[m
+[32m+[m[32mimport requests[m
+ from langchain_ollama import OllamaLLM[m
+ from langchain_core.prompts import ChatPromptTemplate[m
+ from langchain_core.output_parsers import StrOutputParser[m
+[31m-import time[m
+[31m-import requests[m
+[31m-import logging[m
+ [m
+ # הגדרת לוגים[m
+ logging.basicConfig(level=logging.INFO)[m
+[36m@@ -30,86 +31,83 @@[m [mclass MovieChatbot:[m
+         Expert answer:"""[m
+ [m
+         logger.info("Initializing MovieChatbot...")[m
+[31m-        [m
+[32m+[m
+[32m+[m[32m        # אם אין OLLAMA_BASE_URL בסביבה — אל תאתחל את הבוט (כדי לא להפיל את השרת ב-Render)[m
+[32m+[m[32m        base_url = os.getenv("OLLAMA_BASE_URL")[m
+[32m+[m[32m        if not base_url:[m
+[32m+[m[32m            logger.warning("MovieChatbot disabled: OLLAMA_BASE_URL not set. Skipping Ollama initialization.")[m
+[32m+[m[32m            self.enabled = False[m
+[32m+[m[32m            self.chain = None[m
+[32m+[m[32m            return[m
+[32m+[m
+[32m+[m[32m        base_url = base_url.rstrip("/")[m
+[32m+[m[32m        model_name = os.getenv("OLLAMA_MODEL", "mistral")[m
+[32m+[m
+         try:[m
+[31m-            # Service availability check[m
+[31m-            response = requests.get("http://localhost:11434/api/tags")[m
+[31m-            if response.status_code != 200:[m
+[31m-                logger.error(f"Ollama service check failed with status code: {response.status_code}")[m
+[31m-                raise Exception("Ollama service is not available")[m
+[31m-            logger.info("Ollama service is available")[m
+[31m-            [m
+[31m-            # Optimized model settings for maximum speed[m
+[32m+[m[32m            # בדיקת זמינות השרת החיצוני של Ollama[m
+[32m+[m[32m            r = requests.get(f"{base_url}/api/tags", timeout=3)[m
+[32m+[m[32m            r.raise_for_status()[m
+[32m+[m[32m            logger.info("Ollama service is available at %s", base_url)[m
+[32m+[m
+[32m+[m[32m            # מודל Ollama עם פרמטרים ניתנים להגדרה דרך ENV[m
+             self.model = OllamaLLM([m
+[31m-                base_url="http://localhost:11434",[m
+[31m-                model="mistral",[m
+[31m-                temperature=0.1,[m
+[31m-                num_ctx=512,      [m
+[31m-                num_predict=100,  [m
+[31m-                top_k=3,         [m
+[31m-                top_p=0.1,       [m
+[31m-                repeat_penalty=1.1,[m
+[31m-                num_thread=8,    [m
+[31m-                stop=["Question:", "Human:", "User:"][m
+[32m+[m[32m                base_url=base_url,[m
+[32m+[m[32m                model=model_name,[m
+[32m+[m[32m                temperature=float(os.getenv("OLLAMA_TEMPERATURE", "0.1")),[m
+[32m+[m[32m                num_ctx=int(os.getenv("OLLAMA_NUM_CTX", "512")),[m
+[32m+[m[32m                num_predict=int(os.getenv("OLLAMA_NUM_PREDICT", "100")),[m
+[32m+[m[32m                top_k=int(os.getenv("OLLAMA_TOP_K", "3")),[m
+[32m+[m[32m                top_p=float(os.getenv("OLLAMA_TOP_P", "0.1")),[m
+[32m+[m[32m                repeat_penalty=float(os.getenv("OLLAMA_REPEAT_PENALTY", "1.1")),[m
+[32m+[m[32m                stop=["Question:", "Human:", "User:"],[m
+             )[m
+[31m-            logger.info("Model initialized successfully")[m
+ [m
+             self.chain = ([m
+                 ChatPromptTemplate.from_template(self.template)[m
+                 | self.model[m
+                 | StrOutputParser()[m
+             )[m
+[31m-            logger.info("Chain created successfully")[m
+[32m+[m[32m            self.enabled = True[m
+[32m+[m[32m            logger.info("Model & chain initialized successfully")[m
+ [m
+         except Exception as e:[m
+[31m-            logger.error(f"Error during initialization: {str(e)}")[m
+[31m-            raise[m
+[32m+[m[32m            logger.error("MovieChatbot init failed to reach Ollama at %s: %s", base_url, e)[m
+[32m+[m[32m            # כבה את הבוט אבל אל תפיל את השרת[m
+[32m+[m[32m            self.enabled = False[m
+[32m+[m[32m            self.chain = None[m
+ [m
+     def get_response(self, user_input):[m
+         try:[m
+[31m-            logger.info(f"Received user input: {user_input}")[m
+[32m+[m[32m            logger.info("Received user input: %s", user_input)[m
+ [m
+[31m-            if not user_input or not isinstance(user_input, str):[m
+[32m+[m[32m            if not user_input or not isinstance(user_input, str) or not user_input.strip():[m
+                 logger.warning("Invalid input received")[m
+                 return {[m
+                     "response": "❓ I didn't catch that, try again!",[m
+                     "time": time.strftime("%H:%M")[m
+                 }[m
+ [m
+[31m-            # הכנת היסטוריית השיחה[m
+[31m-            history = "\n".join([f"Q: {q}\nA: {a}" for q, a in self.conversation_history[-3:]])  # שמירת 3 הודעות אחרונות[m
+[31m-            [m
+[31m-            # Service availability check[m
+[31m-            try:[m
+[31m-                response = requests.get("http://localhost:11434/api/tags")[m
+[31m-                if response.status_code != 200:[m
+[31m-                    logger.error(f"Service check failed with status: {response.status_code}")[m
+[31m-                    return {[m
+[31m-                        "response": "☕ Bot is on a coffee break, come back in a few minutes!",[m
+[31m-                        "time": time.strftime("%H:%M")[m
+[31m-                    }[m
+[31m-            except Exception as e:[m
+[31m-                logger.error(f"Service check error: {str(e)}")[m
+[32m+[m[32m            # אם הבוט מכובה (למשל אין OLLAMA_BASE_URL) — החזר הודעה ידידותית[m
+[32m+[m[32m            if not getattr(self, "enabled", False) or not self.chain:[m
+                 return {[m
+[31m-                    "response": "🔧 Bot is unavailable right now, try again soon!",[m
+[32m+[m[32m                    "response": "🤖 The chatbot is temporarily unavailable here. Try again later!",[m
+                     "time": time.strftime("%H:%M")[m
+                 }[m
+ [m
+[32m+[m[32m            # היסטוריית שיחה קצרה (3 אחרונות)[m
+[32m+[m[32m            history = "\n".join([f"Q: {q}\nA: {a}" for q, a in self.conversation_history[-3:]])[m
+[32m+[m
+             logger.info("Sending request to model")[m
+             result = self.chain.invoke({[m
+[31m-                "question": user_input,[m
+[32m+[m[32m                "question": user_input.strip(),[m
+                 "history": history[m
+             })[m
+[31m-            [m
+[31m-            # שמירת השיחה הנוכחית[m
+[31m-            self.conversation_history.append((user_input, result.strip()))[m
+[31m-            [m
+[31m-            logger.info(f"Received response from model: {result}")[m
+ [m
+[31m-            # Set timestamp at response time[m
+[31m-            response_time = time.strftime("%H:%M")[m
+[32m+[m[32m            cleaned = (result or "").strip()[m
+[32m+[m[32m            self.conversation_history.append((user_input, cleaned))[m
+ [m
+[31m-            if not result or len(result.strip()) == 0:[m
+[32m+[m[32m            response_time = time.strftime("%H:%M")[m
+[32m+[m[32m            if not cleaned:[m
+                 logger.warning("Empty response received from model")[m
+                 return {[m
+                     "response": "🤔 I didn't understand that, try rephrasing!",[m
+[36m@@ -117,12 +115,12 @@[m [mclass MovieChatbot:[m
+                 }[m
+ [m
+             return {[m
+[31m-                "response": result.strip(),[m
+[32m+[m[32m                "response": cleaned,[m
+                 "time": response_time[m
+             }[m
+ [m
+         except Exception as e:[m
+[31m-            logger.error(f"Error in get_response: {str(e)}", exc_info=True)[m
+[32m+[m[32m            logger.error("Error in get_response: %s", e, exc_info=True)[m
+             return {[m
+                 "response": "⚠️ Oops! Something went wrong, try again in a moment!",[m
+                 "time": time.strftime("%H:%M")[m

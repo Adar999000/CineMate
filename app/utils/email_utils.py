@@ -1,10 +1,11 @@
 import smtplib
-from email.mime.text import MIMEText
+import os
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 def send_email(to_email, subject, body):
-    sender_email = "adar04954@gmail.com"
-    sender_password = "ehrf ajby ukoo djsj"  # סיסמת אפליקציה
+    sender_email = os.environ.get('MAIL_USERNAME', 'adar04954@gmail.com')
+    sender_password = os.environ.get('MAIL_PASSWORD', 'ehrf ajby ukoo djsj')
 
     message = MIMEMultipart()
     message['From'] = sender_email
@@ -19,5 +20,7 @@ def send_email(to_email, subject, body):
         server.send_message(message)
         server.quit()
         print(f"📤 אימייל נשלח ל- {to_email}")
+        return True
     except Exception as e:
-        print(f"❌ שגיאה בשליחת מייל: {e}")
+        print(f"❌ שגיאה בשליחת אימייל: {e}")
+        return False
