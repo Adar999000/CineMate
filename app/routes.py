@@ -6,7 +6,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
-import os
 import time
 from sqlalchemy import text
 
@@ -626,7 +625,6 @@ def inject_new_submissions_count():
     return dict(new_submissions_count=0)
 
 # ----- שליחת מיילים -----
-import os
 def send_password_email(recipient_email, password):
     sender_email = os.environ.get('MAIL_USERNAME', 'adar04954@gmail.com')
     sender_password = os.environ.get('MAIL_PASSWORD', 'ehrf ajby ukoo djsj')
